@@ -13,34 +13,42 @@ class EmpleadoApi
         $tipoEmpleadoDao = new App\Models\TipoEmpleado;
         $logger = new App\Models\Logger;
         $horaActual = new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires'));
+        try
+        {            
+            $empleado = $empleadoDao->where([['usuario', '=', $usuario],['clave', '=', $clave],])->first();        
 
-        $empleado = $empleadoDao->where([['usuario', '=', $usuario],['clave', '=', $clave],])->first();        
+            if($empleado) 
+            {
+                $tipoEmpleado = $tipoEmpleadoDao->where('id', '=', $empleado->id_tipoEmpleado)->first();
 
-        if($empleado) 
-        {
-            $tipoEmpleado = $tipoEmpleadoDao->where('id', '=', $empleado->id_tipoEmpleado)->first();
+                $datos = [
+                    'id' => $empleado->id,
+                    'usuario' => $usuario,
+                    'clave' => $clave,
+                    'id_tipoEmpleado' => $tipoEmpleado->id,
+                    'tipoEmpleado' => $tipoEmpleado->tipoEmpleado,
+                    'id_sector' => $empleado->id_sector
+                ];   
 
-            $datos = [
-                'id' => $empleado->id,
-                'usuario' => $usuario,
-                'clave' => $clave,
-                'id_tipoEmpleado' => $tipoEmpleado->id,
-                'tipoEmpleado' => $tipoEmpleado->tipoEmpleado,
-                'id_sector' => $empleado->id_sector
-            ];   
+                $token = Token::CrearToken($datos);
+                $logger->id_empleado = $empleado->id;
+                $logger->fechaIngreso = $horaActual;
+                $logger->horaIngreso = $horaActual;
+                $logger->save();
 
-            $token = Token::CrearToken($datos);
-            $logger->id_empleado = $empleado->id;
-            $logger->fechaIngreso = $horaActual;
-            $logger->horaIngreso = $horaActual;
-            $logger->save();
-
-            $mensaje = array("Mensaje" => "Bienvenido " . $usuario, "Token " => $token);
+                $mensaje = array("Mensaje" => "Bienvenido " . $usuario, "Token " => $token);
+            }
+            else
+            {
+                $mensaje = array("Estado" => "Error", "Mensaje " => "Usuario y/o clave incorrectos");
+            }
         }
-        else
+        catch(Exception $e)
         {
-            $mensaje = array("Estado" => "Error", "Mensaje " => "Usuario y/o clave incorrectos");
+            $error = $e->getMessage();
+            $mensaje = array("Estado" => "Error", "Mensaje " => $error);
         }
+
         return $response->withJson($mensaje,200);
     }    
 
