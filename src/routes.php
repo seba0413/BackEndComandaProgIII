@@ -49,6 +49,10 @@ return function (App $app) {
     $app->get('/pedido/retrasados/', \PedidoApi::class . ':PedidosRetrasados')
     ->add(\Middleware::class . ':ValidarSocio')
     ->add(\Middleware::class . ':ValidarToken');
+    $app->post('/pedido/cancelar/', \PedidoApi::class . ':CancelarPedido')
+    ->add(\Middleware::class . ':SumarOperacion')
+    ->add(\Middleware::class . ':ValidarMozo')
+    ->add(\Middleware::class . ':ValidarToken');
     $app->get('/pedido/cancelados/', \PedidoApi::class . ':PedidosCancelados')
     ->add(\Middleware::class . ':ValidarSocio')
     ->add(\Middleware::class . ':ValidarToken');
@@ -79,6 +83,8 @@ return function (App $app) {
     $app->post('/empleado/eliminar/', \EmpleadoApi::class . ':EliminarEmpleado')
     ->add(\Middleware::class . ':ValidarSocio')
     ->add(\Middleware::class . ':ValidarToken');
+    $app->get('/empleado/listado/puesto/', \EmpleadoApi::class . ':VerEmpleadosPorPuesto')
+    ->add(\Middleware::class . ':ValidarToken');    
 
     //MESA
     $app->post('/mesa/cargar/', \MesaApi::class . ':CargarMesa')

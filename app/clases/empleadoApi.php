@@ -105,9 +105,11 @@ class EmpleadoApi
         $fecha_hasta = $_GET['fecha_hasta'];
         $operacion = new App\Models\Operacion;
 
-        $operacionesBarraTragos = 0;
-        $operacionesBarraCervezas = 0;
+        $operacionesLocal = 0;
+        $operacionesSalon = 0;
         $operacionesCocina = 0;
+        $operacionesBarraTragos = 0;
+        $operacionesBarraCervezas = 0;        
         $operacionesCandyBar = 0;
 
         if($fecha != 0)
@@ -115,26 +117,32 @@ class EmpleadoApi
             $fecha = strtotime($fecha);
             $fecha = date('Y-m-d H:i:s' , $fecha);
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '=', $fecha)
-            ->where('empleados.estado', '!=', 'E')
-            ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')->get();
+                                     ->where('operaciones.fecha', '=', $fecha)
+                                     ->where('empleados.estado', '!=', 'E')
+                                     ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')->get();
 
             for($i = 0; $i < count($operaciones); $i++)
             {
                 if($operaciones[$i]->id_sector == 1)
-                    $operacionesBarraTragos++;
+                    $operacionesLocal++;
                 if($operaciones[$i]->id_sector == 2)
-                    $operacionesBarraCervezas++;
+                    $operacionesSalon++;
                 if($operaciones[$i]->id_sector == 3)
                     $operacionesCocina++;
                 if($operaciones[$i]->id_sector == 4)
+                    $operacionesBarraTragos++;
+                if($operaciones[$i]->id_sector == 5)
+                    $operacionesBarraCervezas++;
+                 if($operaciones[$i]->id_sector == 6)
                     $operacionesCandyBar++;
             }
 
-            echo 'Barra de tragos y vinos: ' . $operacionesBarraTragos . ' operaciones' . "\n" .
-                 'Barra de cervezas artesanales: ' . $operacionesBarraCervezas . ' operaciones' . "\n" .
-                 'Cocina: ' . $operacionesCocina . ' operaciones' . "\n" .
-                 'Candy Bar: ' . $operacionesCandyBar . ' operaciones' . "\n";
+            echo    'Local: ' . $operacionesLocal . ' operaciones' . "\n" .
+                    'Salon: ' . $operacionesSalon . ' operaciones' . "\n" .
+                    'Cocina: ' . $operacionesCocina . ' operaciones' . "\n" .
+                    'Barra de tragos y vinos: ' . $operacionesBarraTragos . ' operaciones' . "\n" .
+                    'Barra de cervezas artesanales: ' . $operacionesBarraCervezas . ' operaciones' . "\n" .                    
+                    'Candy Bar: ' . $operacionesCandyBar . ' operaciones' . "\n";
         }
         else
         {
@@ -144,26 +152,32 @@ class EmpleadoApi
             $fecha_hasta = date('Y-m-d H:i:s' , $fecha_hasta);
 
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '>=', $fecha_desde)
-            ->where('operaciones.fecha', '<=', $fecha_hasta)
-            ->where('empleados.estado', '!=', 'E')
-            ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')->get();
+                                     ->where('operaciones.fecha', '>=', $fecha_desde)
+                                     ->where('operaciones.fecha', '<=', $fecha_hasta)
+                                     ->where('empleados.estado', '!=', 'E')
+                                     ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')->get();
 
             for($i = 0; $i < count($operaciones); $i++)
             {
                 if($operaciones[$i]->id_sector == 1)
-                    $operacionesBarraTragos++;
+                    $operacionesLocal++;
                 if($operaciones[$i]->id_sector == 2)
-                    $operacionesBarraCervezas++;
+                    $operacionesSalon++;
                 if($operaciones[$i]->id_sector == 3)
                     $operacionesCocina++;
                 if($operaciones[$i]->id_sector == 4)
+                    $operacionesBarraTragos++;
+                if($operaciones[$i]->id_sector == 5)
+                    $operacionesBarraCervezas++;
+                 if($operaciones[$i]->id_sector == 6)
                     $operacionesCandyBar++;
             }
 
-            echo 'Barra de tragos y vinos: ' . $operacionesBarraTragos . ' operaciones' . "\n" .
-                 'Barra de cervezas artesanales: ' . $operacionesBarraCervezas . ' operaciones' . "\n" .
+            echo 'Local: ' . $operacionesLocal . ' operaciones' . "\n" .
+                 'Salon: ' . $operacionesSalon . ' operaciones' . "\n" .
                  'Cocina: ' . $operacionesCocina . ' operaciones' . "\n" .
+                 'Barra de tragos y vinos: ' . $operacionesBarraTragos . ' operaciones' . "\n" .
+                 'Barra de cervezas artesanales: ' . $operacionesBarraCervezas . ' operaciones' . "\n" .                    
                  'Candy Bar: ' . $operacionesCandyBar . ' operaciones' . "\n";
         }
 
@@ -176,6 +190,8 @@ class EmpleadoApi
         $fecha_hasta = $_GET['fecha_hasta'];
         $operacion = new App\Models\Operacion;
 
+        $idDeEmpleadosLocal = [];
+        $idDeEmpleadosSalon = [];
         $idDeEmpleadosVinos = [];
         $idDeEmpleadosCerveza = [];
         $idDeEmpleadosCocina = [];
@@ -186,30 +202,36 @@ class EmpleadoApi
             $fecha = strtotime($fecha);
             $fecha = date('Y-m-d H:i:s' , $fecha);
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '=', $fecha)
-            ->where('empleados.estado', '!=', 'E')
-            ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')
-            ->orderBy('empleados.id_sector')->get();
+                                    ->where('operaciones.fecha', '=', $fecha)
+                                    ->where('empleados.estado', '!=', 'E')
+                                    ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')
+                                    ->orderBy('empleados.id_sector')->get();
 
             for($i = 0; $i < count($operaciones); $i++)
             {
                 if($operaciones[$i]->id_sector == 1)
-                    $idDeEmpleadosVinos[] = $operaciones[$i]->idEmpleado;
+                    $idDeEmpleadosLocal[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 2)
-                    $idDeEmpleadosCerveza[] = $operaciones[$i]->idEmpleado;
+                    $idDeEmpleadosSalon[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 3)
                     $idDeEmpleadosCocina[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 4)
+                    $idDeEmpleadosVinos[] = $operaciones[$i]->idEmpleado;
+                if($operaciones[$i]->id_sector == 5)
+                    $idDeEmpleadosCerveza[] = $operaciones[$i]->idEmpleado;
+                if($operaciones[$i]->id_sector == 6)
                     $idDeEmpleadosCandyBar[] = $operaciones[$i]->idEmpleado;
             }
 
             //Se agrega un -1 al final del array para identificar el ultimo registro
+            $idDeEmpleadosLocal[] = -1;
+            $idDeEmpleadosSalon[] = -1;
             $idDeEmpleadosVinos[] = -1;
             $idDeEmpleadosCerveza[] = -1;
             $idDeEmpleadosCocina[] = -1;
             $idDeEmpleadosCandyBar[] = -1;
 
-            EmpleadoApi::CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones);
+            EmpleadoApi::CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosLocal, $idDeEmpleadosSalon, $idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones);
         }
         else
         {
@@ -219,36 +241,52 @@ class EmpleadoApi
             $fecha_hasta = date('Y-m-d H:i:s' , $fecha_hasta);
 
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '>=', $fecha_desde)
-            ->where('operaciones.fecha', '<=', $fecha_hasta)
-            ->where('empleados.estado', '!=', 'E')
-            ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')
-            ->orderBy('empleados.id_sector')->get();
+                                    ->where('operaciones.fecha', '>=', $fecha_desde)
+                                    ->where('operaciones.fecha', '<=', $fecha_hasta)
+                                    ->where('empleados.estado', '!=', 'E')
+                                    ->select('operaciones.id as id', 'empleados.id as idEmpleado', 'empleados.usuario', 'empleados.id_sector')
+                                    ->orderBy('empleados.id_sector')->get();
 
             for($i = 0; $i < count($operaciones); $i++)
             {
                 if($operaciones[$i]->id_sector == 1)
-                    $idDeEmpleadosVinos[] = $operaciones[$i]->idEmpleado;
+                    $idDeEmpleadosLocal[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 2)
-                    $idDeEmpleadosCerveza[] = $operaciones[$i]->idEmpleado;
+                    $idDeEmpleadosSalon[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 3)
                     $idDeEmpleadosCocina[] = $operaciones[$i]->idEmpleado;
                 if($operaciones[$i]->id_sector == 4)
+                    $idDeEmpleadosVinos[] = $operaciones[$i]->idEmpleado;
+                if($operaciones[$i]->id_sector == 5)
+                    $idDeEmpleadosCerveza[] = $operaciones[$i]->idEmpleado;
+                if($operaciones[$i]->id_sector == 6)
                     $idDeEmpleadosCandyBar[] = $operaciones[$i]->idEmpleado;
             }
 
             //Se agrega un -1 al final del array para identificar el ultimo registro
+            $idDeEmpleadosLocal[] = -1;
+            $idDeEmpleadosSalon[] = -1;
             $idDeEmpleadosVinos[] = -1;
             $idDeEmpleadosCerveza[] = -1;
             $idDeEmpleadosCocina[] = -1;
             $idDeEmpleadosCandyBar[] = -1;
 
-            EmpleadoApi::CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones);
+            EmpleadoApi::CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosLocal, $idDeEmpleadosSalon, $idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones);
         }
     }
 
-    static function CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones)
+    static function CalcularCantidadOperacionesPorEmpleado($idDeEmpleadosLocal, $idDeEmpleadosSalon, $idDeEmpleadosVinos, $idDeEmpleadosCerveza, $idDeEmpleadosCocina, $idDeEmpleadosCandyBar, $operaciones)
     {
+        echo 'LOCAL' . "\n";   
+            
+        EmpleadoApi::CalcularCantidadPorEmpleado($idDeEmpleadosLocal, $operaciones);
+
+        echo '--------------------------------------------------' . "\n";
+        echo 'SALON' . "\n";   
+            
+        EmpleadoApi::CalcularCantidadPorEmpleado($idDeEmpleadosSalon, $operaciones);
+
+        echo '--------------------------------------------------' . "\n";
         echo 'BARRA DE TRAGOS Y VINOS' . "\n";   
             
         EmpleadoApi::CalcularCantidadPorEmpleado($idDeEmpleadosVinos, $operaciones);
@@ -330,10 +368,10 @@ class EmpleadoApi
             $fecha = date('Y-m-d H:i:s' , $fecha);             
 
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '=', $fecha)
-            ->where('empleados.usuario', '=', $empleado)
-            ->where('empleados.estado', '!=', 'E')
-            ->select('empleados.id as idEmpleado', 'empleados.usuario')->get();
+                                    ->where('operaciones.fecha', '=', $fecha)
+                                    ->where('empleados.usuario', '=', $empleado)
+                                    ->where('empleados.estado', '!=', 'E')
+                                    ->select('empleados.id as idEmpleado', 'empleados.usuario')->get();
 
             $empleados = $empleadoDao->all();
             $existe = false;
@@ -362,11 +400,11 @@ class EmpleadoApi
             $fecha_hasta = date('Y-m-d H:i:s' , $fecha_hasta);
 
             $operaciones = $operacion->join('empleados', 'operaciones.id_empleado', '=', 'empleados.id')
-            ->where('operaciones.fecha', '>=', $fecha_desde)
-            ->where('operaciones.fecha', '<=', $fecha_hasta)
-            ->where('empleados.estado', '!=', 'E')
-            ->where('empleados.usuario', '=', $empleado)
-            ->select('empleados.id as idEmpleado', 'empleados.usuario')->get();
+                                    ->where('operaciones.fecha', '>=', $fecha_desde)
+                                    ->where('operaciones.fecha', '<=', $fecha_hasta)
+                                    ->where('empleados.estado', '!=', 'E')
+                                    ->where('empleados.usuario', '=', $empleado)
+                                    ->select('empleados.id as idEmpleado', 'empleados.usuario')->get();
 
             $empleados = $empleadoDao->all();
             $existe = false;
@@ -402,11 +440,11 @@ class EmpleadoApi
         {
             case 'socio':
                 $id_tipoEmpleado = 1;
-                $id_sector = 0;
+                $id_sector = 1;
                 break;
             case 'mozo':
                 $id_tipoEmpleado = 2;
-                $id_sector = 0;
+                $id_sector = 2;
                 break;
             case 'cocinero':
                 $id_tipoEmpleado = 3;
@@ -414,11 +452,15 @@ class EmpleadoApi
                 break;
             case 'bartender':
                 $id_tipoEmpleado = 4;
-                $id_sector = 1;
+                $id_sector = 4;
                 break;
             case 'cervecero':
                 $id_tipoEmpleado = 5;
-                $id_sector = 2;
+                $id_sector = 5;
+                break;
+            case 'pastelero':
+                $id_tipoEmpleado = 6;
+                $id_sector = 6;
                 break;
         }
         try
@@ -493,6 +535,39 @@ class EmpleadoApi
             $mensaje = array("Estado" => "ERROR", "Mensaje" => $error);
         }
         return $response->withJson($mensaje, 200);
+    }
+
+    public function VerEmpleadosPorPuesto($request, $response, $args)
+    {
+        try
+        {
+            $payload = $request->getAttribute("payload")["Payload"];
+            $data = $payload->data;
+            $empleado = new App\Models\Empleado;
+
+            $empleadosPorPuesto = $empleado->where('id_sector', '=', $data->id_sector)
+                                            ->where('estado', '=', 'A')
+                                            ->where('id', '!=', $data->id)
+                                            ->get();
+
+            if($empleadosPorPuesto->isEmpty())
+                echo 'No hay otros empleados en tu puesto';
+            else
+            {
+                echo 'Empleados en su puesto ' . "\n";
+
+                for($i = 0; $i < count($empleadosPorPuesto); $i++)
+                {
+                    echo $empleadosPorPuesto[$i]->usuario . "\n";
+                }
+            }                          
+        }
+        catch(Exception $e)
+        {
+            $error = $e->getMessage();
+            $mensaje = array("Estado" => "Error", "Mensaje" => $error);
+            return $response->withJson($mensaje, 200);
+        }
     }
 }
 

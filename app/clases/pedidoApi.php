@@ -4,10 +4,9 @@ class PedidoApi
 {
     public function CargarPedido($request, $response, $args)
     {
-        $ArrayDeParametros = $request->getParsedBody();
-        $foto = $_FILES['foto'];
         try
-        {         
+        {     
+            $ArrayDeParametros = $request->getParsedBody();    
             $idMesa = $ArrayDeParametros['idMesa'];
             $idProducto = $ArrayDeParametros['idProducto'];
             $cantidad = $ArrayDeParametros['cantidad'];
@@ -27,9 +26,13 @@ class PedidoApi
             $pedido->codigo = $codigo;
             $pedido->horaInicial = $horaInicial;
             $pedido->fecha = $fecha;
-            $nombreFoto = PedidoApi::GuardarFoto($foto, $codigo, $idMesa);
-            $pedido->nombreFoto = $nombreFoto;
-       
+
+            if($_FILES)
+            {
+                $nombreFoto = PedidoApi::GuardarFoto($_FILES['foto'], $codigo, $idMesa);
+                $pedido->nombreFoto = $nombreFoto;
+            }         
+            
             $pedido->save();
             $respuesta = array("Estado" => "El pedido se registro correctamente", "Codigo de pedido" => $codigo);
         }
@@ -102,8 +105,8 @@ class PedidoApi
             $pedidoATomar = $pedido->where('codigo', '=', $codigo)->firstOrFail();        
 
             $idSectorProducto = $pedido->join('productos', 'pedidos.id_producto', '=', 'productos.id')
-            ->where('productos.id', '=', $pedidoATomar->id_producto)
-            ->select('productos.id_sector')->firstOrFail();
+                                        ->where('productos.id', '=', $pedidoATomar->id_producto)
+                                        ->select('productos.id_sector')->firstOrFail();
 
             $horaActual = new DateTime('now', new DateTimeZone('America/Argentina/Buenos_Aires'));
             $horaActual->add(new DateInterval('PT' . $tiempoEstimado . 'M'));
@@ -315,11 +318,11 @@ class PedidoApi
             $fecha = date('Y-m-d H:i:s' , $fecha);
             
             $productosVendidosDao = $pedido->join('productos', 'pedidos.id_producto', '=', 'productos.id')
-            ->where('pedidos.fecha', '=', $fecha)
-            ->select('pedidos.id_producto', 'productos.nombre')
-            ->orderBy('pedidos.id_producto')->get();
+                                            ->where('pedidos.fecha', '=', $fecha)
+                                            ->select('pedidos.id_producto', 'productos.nombre')
+                                            ->orderBy('pedidos.id_producto')->get();
 
-            PedidoApi::ProductoMenosVendido($productosVendidosDao);            
+                PedidoApi::ProductoMenosVendido($productosVendidosDao);          
         }
         else
         {
@@ -329,13 +332,35 @@ class PedidoApi
             $fecha_hasta = date('Y-m-d H:i:s' , $fecha_hasta);
 
             $productosVendidosDao = $pedido->join('productos', 'pedidos.id_producto', '=', 'productos.id')
-            ->where('pedidos.fecha', '>=', $fecha_desde)
-            ->where('pedidos.fecha', '<=', $fecha_hasta)
-            ->select('pedidos.id_producto', 'productos.nombre')
-            ->orderBy('pedidos.id_producto')->get();
+                                            ->where('pedidos.fecha', '>=', $fecha_desde)
+                                            ->where('pedidos.fecha', '<=', $fecha_hasta)
+                                            ->select('pedidos.id_producto', 'productos.nombre')
+                                            ->orderBy('pedidos.id_producto')->get();
             
-            PedidoApi::ProductoMenosVendido($productosVendidosDao);
+                PedidoApi::ProductoMenosVendido($productosVendidosDao);          
+            }
+    }
+
+    public function CancelarPedido($request, $response, $args)
+    {
+        try
+        {
+            $parametros = $request->getParsedBody();
+            $codigo = $parametros['codigo'];
+            
+            $pedido = new App\Models\Pedido;
+            $pedidoActual = $pedido->where('codigo', '=', $codigo)->first();
+            $pedidoActual->id_estadoPedido = 4;
+            $pedidoActual->save();
+            $mensaje = array("Estado" => "Ok", "Mensaje" => "Pedido " . $codigo . " cancelado");
         }
+        catch(Exception $e)
+        {
+            $error = $e->getMessage();
+            $mensaje = array("Estado" => "Error", "Mensaje" => $error);
+        }
+
+        return $response->withJson($mensaje, 200);        
     }
 
     public function PedidosCancelados($request, $response, $args)
@@ -351,9 +376,9 @@ class PedidoApi
             $fecha = strtotime($fecha);
             $fecha = date('Y-m-d H:i:s' , $fecha); 
 
-            $pedidosCancelados = $pedido->where('pedidos.id_estado', '=', '4')
-            ->where('pedidos.fecha', '=', $fecha)
-            ->get();
+            $pedidosCancelados = $pedido->where('pedidos.id_estadoPedido', '=', '4')
+                                        ->where('pedidos.fecha', '=', $fecha)
+                                        ->get();
 
             if(count($pedidosCancelados) > 0)
             {
@@ -377,9 +402,9 @@ class PedidoApi
             $fecha_hasta = date('Y-m-d H:i:s' , $fecha_hasta);
 
             $pedidosCancelados = $pedido->where('pedidos.id_estadoPedido', '=', '4')
-            ->where('pedidos.fecha', '>=', $fecha_desde)
-            ->where('pedidos.fecha', '<=', $fecha_hasta)
-            ->get();
+                                        ->where('pedidos.fecha', '>=', $fecha_desde)
+                                        ->where('pedidos.fecha', '<=', $fecha_hasta)
+                                        ->get();
  
             if(count($pedidosCancelados) > 0)
             {

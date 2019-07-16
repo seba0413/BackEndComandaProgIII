@@ -5,7 +5,6 @@ class MesaApi
     public function CargarMesa($request, $response, $args)
     {
         $codigo = substr(str_shuffle(str_repeat("0123456789abcdefghijklmnopqrstuvwxyz", 3)), 0, 5);
-        $idEstado = 1;
         try
         {
             $mesa = new App\Models\Mesa;
@@ -234,8 +233,8 @@ class MesaApi
             $fecha = date('Y-m-d H:i:s' , $fecha); 
 
             $mesasUsadasDao = $pedido->orderBy('id_mesa')
-            ->where('fecha', '=', $fecha)
-            ->select('id_mesa')->get();
+                                    ->where('fecha', '=', $fecha)
+                                    ->select('id_mesa')->get();
 
             $mesasUsadas = [];
             $mesaMenosUsada = -1;
